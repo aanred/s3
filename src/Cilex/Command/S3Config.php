@@ -7,9 +7,9 @@ namespace Cilex\Command;
  */
 class S3Config
 {
-	public static $ACCESS_KEY_ID = 'AKIAIKB2F3OPOATSTIEA';
+	public static $ACCESS_KEY_ID = '';
 
-	public static $SECRET_ACCESS_KEY = 'NevKIQU4301uHhSJxZbfy51YSBkYyCf/9ZdsdigU';
+	public static $SECRET_ACCESS_KEY = '';
 
 	public static $REGION = 'us-east-1';
 
