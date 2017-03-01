@@ -16,7 +16,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Cilex\Provider\Console\Command;
-use Aws\S3\S3Client;
+
+use Aws\S3\MultipartUploader;
+use Aws\Exception\MultipartUploadException;
 
 /**
  * Example command for testing purposes.
@@ -46,17 +48,28 @@ class S3UploadCommand extends Command
         $bucket = $input->getArgument('bucket');
         $source = $input->getArgument('source');
 
-        try {
-            $command = $s3->getCommand('PutObject', [
-                'Bucket' => $bucket,
-                'Key'    => basename($source),
-                'Body'   => fopen($source, 'r')
-            ]);
+        $uploader = new MultipartUploader($s3, $source, [
+            'bucket' => $bucket,
+            'key'    => basename($source),
+        ]);
 
-            $result = $s3->execute($command);
-            $output->writeln('SUCCESS');
-        } catch (\Aws\S3\Exception\S3Exception $e) {
-            $output->writeln($e->getMessage());
+        try {
+            $result = $uploader->upload();
+            $output->writeln($result['ObjectURL'] . "\n");
+        } catch (MultipartUploadException $e) {
+            $output->writeln($e->getMessage() . "\n");
         }
+
+        // try {
+        //     $command = $s3->getCommand('PutObject', [
+        //         'Bucket' => $bucket,
+        //         'Key'    => basename($source),
+        //         'Body'   => fopen($source, 'r')
+        //     ]);
+        //     $result = $s3->execute($command);
+        //     $output->writeln('SUCCESS');
+        // } catch (\Aws\S3\Exception\S3Exception $e) {
+        //     $output->writeln($e->getMessage());
+        // }
     }
 }
