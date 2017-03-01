@@ -19,7 +19,8 @@
         "silex/api"                : "^2.0",
         "symfony/process"          : "^2.7 || ^3.0",
         "symfony/console"          : "^2.7 || ^3.0",
-        "symfony/event-dispatcher" : "^2.7 || ^3.0"
+        "symfony/event-dispatcher" : "^2.7 || ^3.0",
+        "aws/aws-sdk-php": "^3.23"
     },
 
     "require-dev" : {

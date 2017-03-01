@@ -6,10 +6,6 @@ if (!$loader = include __DIR__ . '/../vendor/autoload.php') {
 }
 
 $app = new \Cilex\Application('Cilex');
-$app->command(new \Cilex\Command\GreetCommand());
-$app->command(new \Cilex\Command\DemoInfoCommand());
-$app->command('foo', function ($input, $output) {
-    $output->writeln('Example output');
-});
+$app->command(new \Cilex\Command\S3UploadCommand());
 
 $app->run();
