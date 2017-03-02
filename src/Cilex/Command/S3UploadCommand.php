@@ -35,7 +35,8 @@ class S3UploadCommand extends Command
             ->setDescription('Upload file to S3')
             ->addArgument('bucket', InputArgument::REQUIRED, 'Which bucket do you want to upload into?')
             ->addArgument('source', InputArgument::REQUIRED, 'Absolute path of the file on the disk')
-            ->addArgument('region', InputArgument::OPTIONAL, 'Region');
+            ->addOption('region', 'r', InputOption::VALUE_REQUIRED, 'Region')
+            ->addOption('expire', 'e', InputOption::VALUE_REQUIRED, 'Expire');
     }
 
     /**
@@ -43,33 +44,71 @@ class S3UploadCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $s3 = (new S3Config())->client();
-
         $bucket = $input->getArgument('bucket');
         $source = $input->getArgument('source');
+        $region = $input->getOption('region');
+        $expireDays = $input->getOption('expire');
 
+        $s3 = (new S3Config($region))->client();
+        $key = basename($source);
+
+        // Multipart Uploader
         $uploader = new MultipartUploader($s3, $source, [
             'bucket' => $bucket,
-            'key'    => basename($source),
+            'key'    => $key,
         ]);
 
+        $output->writeln("Start uploading...\n");
+
+        // Recover from error
+        // We try to recover until specific times
+        $maxRecoveries = 10;
+        $numRecovery = 0;
+        do {
+            try {
+                $result = $uploader->upload();
+                $output->writeln($result['ObjectURL'] . "\n");
+            } catch (MultipartUploadException $e) {
+                $numRecovery++;
+                $output->writeln($e->getMessage() . "\n");
+                $output->writeln("Trying to recover upload... ({$numRecovery})\n");
+                $uploader = new MultipartUploader($s3Client, $source, [
+                    'state' => $e->getState(),
+                ]);
+            }
+        } while (!isset($result) && $numRecovery < $maxRecoveries);
+
+        if (empty($result))
+            $output->writeln("Upload failed!\n");
+
+        $output->writeln("Upload success.\n");
+
+        if (empty($expireDays)) {
+            $output->writeln("No expiration set.\n");
+            return;
+        }
+        
+        $output->writeln("Setting expiration to {$expireDays} days...\n");
+
+        // Once it is uploaded we set the expiration days
         try {
-            $result = $uploader->upload();
-            $output->writeln($result['ObjectURL'] . "\n");
-        } catch (MultipartUploadException $e) {
+            $result = $s3->putBucketLifecycleConfiguration([
+                'Bucket' => $bucket,
+                'LifecycleConfiguration' => [
+                    'Rules' => [
+                        [
+                            'Expiration' => [
+                                'Days' => $expireDays,
+                            ],
+                            'Prefix' => $key,
+                            'Status' => 'Enabled',
+                        ]
+                    ]
+                ]
+            ]);
+            $output->writeln("Setting expiration done.\n");
+        } catch (S3Exception $e) {
             $output->writeln($e->getMessage() . "\n");
         }
-
-        // try {
-        //     $command = $s3->getCommand('PutObject', [
-        //         'Bucket' => $bucket,
-        //         'Key'    => basename($source),
-        //         'Body'   => fopen($source, 'r')
-        //     ]);
-        //     $result = $s3->execute($command);
-        //     $output->writeln('SUCCESS');
-        // } catch (\Aws\S3\Exception\S3Exception $e) {
-        //     $output->writeln($e->getMessage());
-        // }
     }
 }

@@ -6,7 +6,10 @@
     "license"     : "MIT",
 
     "autoload" : {
-        "psr-4" : { "Cilex\\": "src/Cilex" }
+        "psr-4" : { "Cilex\\": "src/Cilex" },
+        "files": [
+            "config/s3.php"
+        ]
     },
 
     "authors":[
@@ -36,5 +39,5 @@
         "branch-alias" : {
             "dev-develop": "2.x-dev"
         }
-   }
+    }
 }

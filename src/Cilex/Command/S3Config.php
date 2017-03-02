@@ -7,10 +7,6 @@ namespace Cilex\Command;
  */
 class S3Config
 {
-	public static $ACCESS_KEY_ID = '';
-
-	public static $SECRET_ACCESS_KEY = '';
-
 	public static $REGION = 'us-east-1';
 
 	protected $credentials;
@@ -22,7 +18,7 @@ class S3Config
      */
     public function __construct($region = '')
     {
-    	$this->credentials = new \Aws\Credentials\Credentials(self::$ACCESS_KEY_ID, self::$SECRET_ACCESS_KEY);
+    	$this->credentials = new \Aws\Credentials\Credentials(ACCESS_KEY_ID, SECRET_ACCESS_KEY);
     	$this->client = new \Aws\S3\S3Client([
 		    'version'     => 'latest',
 		    'region'      => $region ?: self::$REGION,
