@@ -60,7 +60,7 @@ class S3UploadCommand extends Command
             'key'    => $key,
         ]);
 
-        $output->writeln("Start uploading...\n");
+        $output->writeln("Start uploading...");
 
         // Recover from error
         // We try to recover until specific times
@@ -69,11 +69,11 @@ class S3UploadCommand extends Command
         do {
             try {
                 $result = $uploader->upload();
-                $output->writeln($result['ObjectURL'] . "\n");
+                $output->writeln($result['ObjectURL']);
             } catch (MultipartUploadException $e) {
                 $numRecovery++;
-                $output->writeln($e->getMessage() . "\n");
-                $output->writeln("Trying to recover upload... ({$numRecovery})\n");
+                $output->writeln($e->getMessage());
+                $output->writeln("Trying to recover upload... ({$numRecovery})");
                 $uploader = new MultipartUploader($s3Client, $source, [
                     'state' => $e->getState(),
                 ]);
@@ -81,16 +81,16 @@ class S3UploadCommand extends Command
         } while (!isset($result) && $numRecovery < $maxRecoveries);
 
         if (empty($result))
-            $output->writeln("Upload failed!\n");
+            $output->writeln("Upload failed!");
 
-        $output->writeln("Upload success.\n");
+        $output->writeln("Upload success.");
 
         if (empty($expire)) {
-            $output->writeln("No expiration set.\n");
+            $output->writeln("No expiration set.");
             return;
         }
         
-        $output->writeln("Setting expiration to {$expire} days...\n");
+        $output->writeln("Setting expiration to {$expire} days...");
 
         // Once it is uploaded we set the expiration days
         try {
@@ -108,9 +108,9 @@ class S3UploadCommand extends Command
                     ]
                 ]
             ]);
-            $output->writeln("Setting expiration done.\n");
+            $output->writeln("Setting expiration done.");
         } catch (S3Exception $e) {
-            $output->writeln($e->getMessage() . "\n");
+            $output->writeln($e->getMessage());
         }
     }
 }
