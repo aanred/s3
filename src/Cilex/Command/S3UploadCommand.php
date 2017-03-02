@@ -36,7 +36,8 @@ class S3UploadCommand extends Command
             ->addArgument('bucket', InputArgument::REQUIRED, 'Which bucket do you want to upload into?')
             ->addArgument('source', InputArgument::REQUIRED, 'Absolute path of the file on the disk')
             ->addOption('region', 'r', InputOption::VALUE_REQUIRED, 'Region')
-            ->addOption('expire', 'e', InputOption::VALUE_REQUIRED, 'Expire');
+            ->addOption('expire', 'e', InputOption::VALUE_REQUIRED, 'Expire')
+            ->addOption('prefix', 'p', InputOption::VALUE_REQUIRED, 'Prefix Key');
     }
 
     /**
@@ -47,10 +48,11 @@ class S3UploadCommand extends Command
         $bucket = $input->getArgument('bucket');
         $source = $input->getArgument('source');
         $region = $input->getOption('region');
-        $expireDays = $input->getOption('expire');
+        $expire = $input->getOption('expire');
+        $prefix = $input->getOption('prefix');
 
         $s3 = (new S3Config($region))->client();
-        $key = basename($source);
+        $key = $prefix . basename($source);
 
         // Multipart Uploader
         $uploader = new MultipartUploader($s3, $source, [
@@ -83,12 +85,12 @@ class S3UploadCommand extends Command
 
         $output->writeln("Upload success.\n");
 
-        if (empty($expireDays)) {
+        if (empty($expire)) {
             $output->writeln("No expiration set.\n");
             return;
         }
         
-        $output->writeln("Setting expiration to {$expireDays} days...\n");
+        $output->writeln("Setting expiration to {$expire} days...\n");
 
         // Once it is uploaded we set the expiration days
         try {
@@ -98,7 +100,7 @@ class S3UploadCommand extends Command
                     'Rules' => [
                         [
                             'Expiration' => [
-                                'Days' => $expireDays,
+                                'Days' => $expire,
                             ],
                             'Prefix' => $key,
                             'Status' => 'Enabled',
