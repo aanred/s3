@@ -36,7 +36,6 @@ class S3UploadCommand extends Command
             ->addArgument('bucket', InputArgument::REQUIRED, 'Which bucket do you want to upload into?')
             ->addArgument('source', InputArgument::REQUIRED, 'Absolute path of the file on the disk')
             ->addOption('region', 'r', InputOption::VALUE_REQUIRED, 'Region')
-            ->addOption('expire', 'e', InputOption::VALUE_REQUIRED, 'Expire')
             ->addOption('prefix', 'p', InputOption::VALUE_REQUIRED, 'Prefix Key');
     }
 
@@ -48,7 +47,6 @@ class S3UploadCommand extends Command
         $bucket = $input->getArgument('bucket');
         $source = $input->getArgument('source');
         $region = $input->getOption('region');
-        $expire = $input->getOption('expire');
         $prefix = $input->getOption('prefix');
 
         $s3 = (new S3Config($region))->client();
@@ -85,7 +83,7 @@ class S3UploadCommand extends Command
 
         $output->writeln("Upload success.");
 
-        if (empty($expire)) {
+        /*if (empty($expire)) {
             $output->writeln("No expiration set.");
             return;
         }
@@ -111,6 +109,6 @@ class S3UploadCommand extends Command
             $output->writeln("Setting expiration done.");
         } catch (S3Exception $e) {
             $output->writeln($e->getMessage());
-        }
+        }*/
     }
 }
