@@ -72,7 +72,7 @@ class S3UploadCommand extends Command
                 $numRecovery++;
                 $output->writeln($e->getMessage());
                 $output->writeln("Trying to recover upload... ({$numRecovery})");
-                $uploader = new MultipartUploader($s3Client, $source, [
+                $uploader = new MultipartUploader($s3, $source, [
                     'state' => $e->getState(),
                 ]);
             }
